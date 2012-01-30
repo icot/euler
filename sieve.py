@@ -7,9 +7,7 @@ def eratosthenes(n):
     candidates = [item for item in range(3, n, 2)]
     L = len(candidates)
     for cpos, c in enumerate(candidates):
-        if not c:
-            continue
-        else:
+        if c:
             for pos in range(cpos+c, L, c):
                 candidates[pos] = 0
     candidates.insert(0,2)
@@ -42,7 +40,7 @@ def lucky(n):
         cpos += 1
     return lucky
 
-MAXPRIME = 1000000
+MAXPRIME = 100000
 
 if __name__ == "__main__":
     N = 20
