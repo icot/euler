@@ -46,11 +46,18 @@ MAXPRIME = 1000000
 
 if __name__ == "__main__":
     N = 20
-    t = timeit.Timer("eratosthenes(MAXPRIME)", "from __main__ import eratosthenes, MAXPRIME")
-    print("Eratosthenes: %.2f usec/pass " % (1e6 * t.timeit(number=N)/float(N)))
-    t = timeit.Timer("sundaram(MAXPRIME)", "from __main__ import sundaram, MAXPRIME")
-    print("Sundaram: %.2f usec/pass" % (1e6 * t.timeit(number=N)/float(N)))
-    #t = timeit.Timer("lucky(MAXPRIME)", "from __main__ import lucky, MAXPRIME")
-    #print("Lucky: %.2f usec/pass" % (1e6 * t.timeit(number=N)/float(N)))
-    print(len(eratosthenes(MAXPRIME)))
-    print(len(sundaram(MAXPRIME)))
+    times = []
+    MaxNum = 100
+    for c in range(6):
+        cmd = "eratosthenes(%d)" % MaxNum
+        t1 = timeit.Timer(cmd, "from __main__ import eratosthenes")
+        t1u = 1e6 * t1.timeit(number=N)/float(N)
+        cmd = "sundaram(%d)" % MaxNum
+        t2 = timeit.Timer(cmd, "from __main__ import sundaram")
+        t2u = 1e6 * t2.timeit(number=N)/float(N)
+        times.append((N, t1u, t2u))
+        MaxNum = MaxNum * 10
+    
+    for item in times:
+        print(item)
+   
