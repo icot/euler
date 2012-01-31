@@ -72,7 +72,7 @@ uint32_t* factorize(uint32_t n, uint32_t *primes){
     uint32_t *factors = (uint32_t *) calloc(MaxPrime, sizeof(uint32_t));
     uint32_t acc = n;
     uint32_t cont = 0;
-    while(*primes){
+    while(*primes && (acc>1)){
         if (acc % ((uint64_t) (*primes)) == 0){
             *(factors + cont) = *primes;
             acc /= *primes;
@@ -94,22 +94,32 @@ bool isprime(uint64_t n, uint64_t *primes){
     return true;
 }
 
+bool hamming(uint32_t n, uint32_t type, uint32_t *primes){
+    uint32_t acc = n;
+    while(*primes && (acc>1)){
+        if (acc % ((uint64_t) (*primes)) == 0){
+            acc /= *primes;
+        }
+        else{
+            primes++;
+        }
+        if (*primes > type) return false;
+    }
+    return true;
+}
 
 int main(void){
     uint32_t Limit = 1e8;
     uint32_t MaxPrime = ((uint32_t) sqrt(Limit)) + 1;
     uint32_t *primes = sieve_u32(MaxPrime);
     uint32_t cont = 0;
-    for(uint32_t n = 2; n < Limit; n++) {
-        uint32_t *factors = factorize(n, primes);
-        uint32_t MaxFactor = 0;
-        while (*factors){
-            if (*factors > MaxFactor) MaxFactor = *factors;
-            factors++;
+    for(uint32_t n = 1; n <= Limit; n++) {
+        if (hamming(n, 100, primes)){
+            cont++;
         }
-        if (MaxFactor == 5) cont++;
+        if ((n % 1000000)==0) printf("n: %u, cont: %u\n", n, cont);
     }
-    printf("Total: %u", cont);
+    printf("Total: %u\n", cont);
     free(primes);
     return 0;
 }
