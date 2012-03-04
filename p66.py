@@ -3,6 +3,16 @@
 from math import floor, sqrt
 from fractions import Fraction
 
+def reduce_frac(cfr):
+    fr = Fraction(cfr.pop())
+    try:
+        while 1:
+            buf = cfr.pop()
+            fr = 1 / fr
+            fr += buf
+    except IndexError:
+        return fr
+
 def frac(cfrepr):
     cfr = [cfrepr[0]]
     tail = cfrepr[1:]
@@ -12,14 +22,8 @@ def frac(cfrepr):
         tail = tail + tail[:-1]
         cfr.extend(tail)
     # Reduce cfr
-    fr = Fraction(cfr.pop())
-    try:
-        while 1:
-            buf = cfr.pop()
-            fr = 1 / fr
-            fr += buf
-    except IndexError:
-        return (fr.numerator, fr.denominator)
+    fr = reduce_frac(cfr)
+    return (fr.numerator, fr.denominator)
 
 def contfrac(N):
     r = Fraction(sqrt(N))
@@ -27,14 +31,34 @@ def contfrac(N):
     q = r.denominator
     while q:
         n = p // q
+        print p,q
         yield n
         q, p = p - q * n, q
 
-def cfrepr(N):
-    gen = contfrac(N)
-    a = [gen.next()]
+def continued_fraction(N):
+    def step(r):
+        a0 = int(floor(r))
+        a1 = r - a0
+        if a1:
+            return (a0, 1.0 / a1)
+        else:
+            return (a0, None)
+
+    buf = sqrt(N)
+    while 1:
+        a0, a1 = step(buf)
+        if a1:
+            buf = a1
+        else:
+            break
+        yield a0
+
+def cfrepr(N, generator_method):
+    gen = generator_method(N)
+    a = []
     cont = True
     try:
+        a = [gen.next()]
         while cont:
             elem = gen.next()
             a.append(elem)
@@ -55,7 +79,7 @@ def main():
     maxx = 0
     maxd = 0
     for D in range(3, 20):
-        a = cfrepr(D)
+        a = cfrepr(D, continued_fraction)
         if len(a) > 1:
             xy = frac(a)
             x, y = xy
