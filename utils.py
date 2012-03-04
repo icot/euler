@@ -2,6 +2,7 @@
 
 import math
 import functools
+from sieve import eratosthenes as prime_sieve
 
 def memoize(f):
     cache = {}
@@ -21,12 +22,34 @@ def isprime(num):
             return False
     return True
 
-def phi(n):
-    f = list(set(factors(n)))
+def factors(num, primes = None):
+    factors = []
+    if num > 3:
+        buf = num
+        if primes:
+            fcandidates = [prime for prime in primes if prime < (num/2) +1]
+        else:
+            fcandidates = prime_sieve((num/2)+1)
+        for candidate in fcandidates:
+            cond = True
+            while cond:
+                r = buf % candidate
+                if r == 0:
+                    factors.append(candidate)
+                    buf /= candidate
+                elif buf == 1:
+                    break
+                else:
+                    cond = False
+    return factors
+
+
+def phi(n, primes = None):
+    f = list(set(factors(n, primes)))
     if f:
         return int(n * reduce(lambda x,y: x*y, map(lambda x: 1.0 - (1.0/x), f)))
     else:
-        if n> 1:
+        if n > 1:
             return (n-1)
         else:
             return 1
@@ -39,19 +62,6 @@ def gcd(a, b):
 def phi2(n):
     phi = [gcd(n, k) for k in xrange(1, n)]
     return sum(filter(lambda x: x== 1, phi))
-
-
-def FastPrimeSieve(max):
-    possible_primes = [n for n in range(3,max+1, 2)]
-    curr_index = -1
-    max_index = len(possible_primes)
-    for latest_prime in possible_primes:
-        curr_index +=1
-        if not latest_prime : continue
-        for index_variable_not_named_j in range((curr_index+latest_prime),max_index, latest_prime): 
-            possible_primes[index_variable_not_named_j]=0
-    possible_primes.insert(0,2)
-    return [x for x in possible_primes if x > 0]
 
 def sum_digits(num):
     return reduce(lambda x,y: x+y, map(lambda x: int(x), str(num)))
@@ -144,24 +154,6 @@ def test_hex(num, th = 1e-6):
             return True
         else:
             return False
-
-def factors(num):
-    factors = []
-    if num >3:
-        buf = num
-        fcandidates = xrange(2, int(num/2) + 1)
-        for candidate in fcandidates:
-            cond = True
-            while cond:
-                r = buf % candidate
-                if r == 0:
-                    factors.append(candidate)
-                    buf = buf / candidate
-                else:
-                    cond = False                   
-                if buf == 1:
-                    break
-    return factors
 
 def ndivisors(num):
     f = factors(num)
