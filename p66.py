@@ -78,7 +78,7 @@ def cfrepr(N, generator_method):
 def main():
     maxx = 0
     maxd = 0
-    for D in range(3, 20):
+    for D in range(3, 1001):
         a = cfrepr(D, continued_fraction)
         if len(a) > 1:
             xy = frac(a)
@@ -86,8 +86,8 @@ def main():
             if x >= maxx:
                 maxx = x
                 maxd = D
-            print "D: %d Maxx: %d MaxD: %d, X: %d Y: %d" % (D, maxx, maxd, x,y)
-            print "cfrep: ", a, "k:", len(a[1:]), "\n"
+            print "D: %d MaxD: %d, X: %d Y: %d" % (D, maxd, x,y)
+            print "cfrep k:", len(a[1:]), "\n"
 
 if __name__ == "__main__":
     main()
