@@ -3,12 +3,6 @@
 ; requirements
 (require srfi/1)
 
-(define cf61 '(7 1 4 3 1 2 2 1 3 4 1 14))
-(define body (take (cdr cf61) (sub1 (length (cdr cf61)))))
-(define lb (length body))
-(define part1 (take body (floor (/ lb 2))))
-(define part2 (drop body (/ lb 2)))
-
 ; continued fraction generator
 (define (cf n)
   ; computes next element of continued fraction
@@ -31,8 +25,8 @@
             (eq-list? part1 (reverse part2))))))
   ; Recursive body
   (define (cfgen n acc)
-    (begin 
-      (printf "n: ~a acc: ~a\n" n acc)
+    ;(begin 
+    ;  (printf "n: ~a acc: ~a\n" n acc)
     (cond
       ; first iteration
       [(false? (pair? n)) (let ([as (step (sqrt n))])
@@ -55,7 +49,7 @@
                         [else (let* ([as (step (cdr n))])
                                 (cfgen as (append acc (list (car as)))) )]))]
               )]))
-    )                
+    ;)                
   (cfgen n '()))
 
 ; Computes solution from a continued fraction representation
@@ -63,8 +57,24 @@
   (let* ([k (sub1 (length repr))]
          [frepr (if (even? k) 
                     repr
-                    (append repr (take (cdr repr) (sub1 (length (cdr repr))))))])
-    (reduce-right (lambda (a b) (+ a (/ 1 b))) '() frepr)))
+                    (append repr (take (cdr repr) (sub1 (length (cdr repr))))))]
+         [frac (reduce-right (lambda (a b) (+ a (/ 1 b))) '() frepr)]
+         [x (numerator frac)]
+         [y (denominator frac)]
+         )
+    (cons x y)))
 
 
 ; main body
+(define (body D)
+  (define (body-rec d D maxx maxd)
+    (let ([xy (solution (cf d))])
+      (begin
+        (printf "d:~a, xy = ~a\n" d xy) 
+        (cond
+          [(> d D) (cons maxd maxx)]
+          [(> (car xy) maxx) (body-rec (add1 d) D (car xy) d)]
+          [else (body-rec (add1 d) D maxx maxd)]))))
+  (body-rec 1 D 0 0))
+         
+(body 1000)
