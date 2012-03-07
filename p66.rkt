@@ -32,49 +32,55 @@
       [(false? (pair? n)) (let ([as (step (sqrt n))])
                             (cfgen as (append acc (list (car as)))))]
       [(null? (cdr n)) acc]
-      ; general case
-      [else (cond
-              [(= 1 (length acc)) (let ([as (step (cdr n))])
+      [(= 1 (length acc)) (let ([as (step (cdr n))])
                                     (cfgen as (append acc (list (car as)))))]
-              ; general case
-              [else (let ([a0 (first acc)]
-                          [an (last acc)])
-                      (cond
-                        ; check end candidate
-                        [(= an (* 2 a0)) (if (testcf? acc)
-                                             acc
-                                             (let ([as (step (cdr n))])
-                                               (cfgen as (append acc (list (car as))))))]
-                        ; general case
-                        [else (let* ([as (step (cdr n))])
-                                (cfgen as (append acc (list (car as)))) )]))]
-              )]))
-    ;)                
+      ; general case
+      [else (let ([a0 (first acc)]
+                  [an (last acc)])
+              (cond
+                ; check end candidate
+                [(= an (* 2 a0)) (if (testcf? acc)
+                                     acc
+                                     (let ([as (step (cdr n))])
+                                       (cfgen as (append acc (list (car as))))))]
+                [else (let* ([as (step (cdr n))])
+                         (cfgen as (append acc (list (car as)))) )]))]
+              ))      
   (cfgen n '()))
 
 ; Computes solution from a continued fraction representation
 (define (solution repr)
-  (let* ([k (sub1 (length repr))]
+  (let* ([tail (cdr repr)]
+         [k (length tail)]
          [frepr (if (even? k) 
-                    repr
-                    (append repr (take (cdr repr) (sub1 (length (cdr repr))))))]
-         [frac (reduce-right (lambda (a b) (+ a (/ 1 b))) '() frepr)]
-         [x (numerator frac)]
-         [y (denominator frac)]
-         )
-    (cons x y)))
+                    (take repr k)
+                    (append repr (take tail (sub1 k))))]
+         [frac (reduce-right (lambda (a b) (+ a (/ 1 b))) '() frepr)])
+    (if (> (length repr) 1)
+        frac
+        (car repr))))
 
+(define (test_solution? xy d)
+  (let ([x (car xy)]
+        [y (cdr xy)])
+    (or 
+     (= 1 (- (* x x) (* (* y y) d)))
+     (= 1 y))))
 
 ; main body
 (define (body D)
   (define (body-rec d D maxx maxd)
-    (let ([xy (solution (cf d))])
+    (let* ([sol (solution (cf d))]
+          [x (numerator sol)]
+          [y (denominator sol)]
+          [xy (cons x y)])
       (begin
-        (printf "d:~a, xy = ~a\n" d xy) 
+        (printf "d:~a, xy = ~a test: ~a\n" d xy (test_solution? xy d)) 
         (cond
           [(> d D) (cons maxd maxx)]
           [(> (car xy) maxx) (body-rec (add1 d) D (car xy) d)]
           [else (body-rec (add1 d) D maxx maxd)]))))
-  (body-rec 1 D 0 0))
+  (body-rec 3 D 0 0))
          
 (body 1000)
+
