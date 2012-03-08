@@ -5,36 +5,15 @@ import copy
 from math import exp,sqrt, floor,ceil
 from utils import memoize
 
-def partitions(N):
-    def loop(seed):
-        res = copy.copy(seed)
-        for p in res:
-            if len(p) > 1:
-                newp = p[:-2]
-                newe = sum(p[-2:])
-                newp.append(newe)
-                newp.sort()
-                newp.reverse()
-                print "p: ", p, " newp: ", newp
-                if newp not in res:
-                    res.append(newp)
-        return res
-
-    parts = []
-    # Initial seeding
-    for n in xrange(1,N+1):
-        parts.append( [n] + [1 for item in xrange(N - n)] )
-    for p in parts:
-        if len(p) > 1:
-            newp = p[:-2]
-            newe = sum(p[-2:])
-            newp.append(newe)
-            newp.sort()
-            newp.reverse()
-            print "p: ", p, " newp: ", newp
-            if newp not in parts:
-                parts.append(newp)
-    return parts
+def ngen():
+    m = 1
+    ref = pow(5,6)
+    while 1:
+        cand = 5*m + 4
+        if (((24*cand) % ref) == 1):
+            if ((cand - 5) % 7) != 0 or ((cand - 6) % 11) != 0:
+                yield cand
+        m += 1
 
 def hrlimit(n):
     sqrt3 = 1.7320508075688772
@@ -66,5 +45,13 @@ def nparts(n):
     return p
 
 if __name__ == "__main__":
-    res = 0
-    print partitions(10)
+    cont = 0
+    candidate = 1
+    sys.setrecursionlimit = 10000
+    while cont < 50:
+        p = nparts(candidate)
+        if p % 64 == 0:
+            print candidate, p
+            cont +=1
+        candidate += 1
+
