@@ -1,55 +1,70 @@
 #!/usr/bin/python
 
 import sys
-
-from utils import isprime
+import copy
+from math import exp,sqrt, floor,ceil
+from utils import memoize
 
 def partitions(N):
-    def new_partitions(seed):
-        newps = []
-        if len(seed) > 1:
-            for pos in xrange(1, len(seed) ):
-                newp = seed[0:pos-1] + [sum(seed[pos-1:pos+1])] + seed[pos+1:]
+    def loop(seed):
+        res = copy.copy(seed)
+        for p in res:
+            if len(p) > 1:
+                newp = p[:-2]
+                newe = sum(p[-2:])
+                newp.append(newe)
                 newp.sort()
                 newp.reverse()
-                if newp not in newps:
-                    newps.append(newp)
-            return newps
-        else:
-            return [seed]
+                print "p: ", p, " newp: ", newp
+                if newp not in res:
+                    res.append(newp)
+        return res
+
     parts = []
     # Initial seeding
-    for n in xrange(1,N):
+    for n in xrange(1,N+1):
         parts.append( [n] + [1 for item in xrange(N - n)] )
     for p in parts:
-        newps = new_partitions(p)
-        for newp in newps:
+        if len(p) > 1:
+            newp = p[:-2]
+            newe = sum(p[-2:])
+            newp.append(newe)
+            newp.sort()
+            newp.reverse()
+            print "p: ", p, " newp: ", newp
             if newp not in parts:
                 parts.append(newp)
     return parts
 
-def nparts(N):
-    nparts.rparts = {}
-    def restParts(n,k):
-        if k == 0 or k ==1:
-            nparts.rparts[(n,k)] = 1
-            return 1
+def hrlimit(n):
+    sqrt3 = 1.7320508075688772
+    pi = 3.141592653589793
+    a = 1/(4*n*sqrt3)
+    b = 0.816496580927726
+    ex = pi*b*sqrt(n)
+    return a*exp(ex)
+
+ps = {}
+
+def nparts(n):
+    def rp(k,n):
+        global ps
+        if k > n:
+            return 0
         else:
-            if k > n:
-                return 0
+            if k==n:
+                return 1
             else:
                 try:
-                    return nparts.rparts[(n,k)]
+                    return ps[(k,n)]
                 except KeyError:
-                    buf = restParts(n-k, k) + restParts(n, k-1)
-                    nparts.rparts[(n,k)] = buf
-                    return buf
-    for n in xrange(N+1):
-        for k in xrange(N+1):
-            restParts(n,k)
-            #print n,k, nparts.rparts[(n,k)]
-    return nparts.rparts[(N,N)]
-
+                    ps[(k,n)] = rp(k+1,n) + rp(k, n-k)
+                    return ps[(k,n)]
+    p = 2 
+    for k in xrange(1, int(floor(n/2.0))):
+        p += rp(k, n-k)
+    return p
 
 if __name__ == "__main__":
-    pass
+    res = 0
+    print partitions(10)
