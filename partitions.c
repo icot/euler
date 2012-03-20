@@ -20,18 +20,14 @@ uint64_t restricted_partitions(uint64_t k, uint64_t n, cache_t *cache){
                 return restricted_partitions(k+1, n, cache) + restricted_partitions(k, n-k, cache);
         }
         else{
-            uint64_t cached = cache->data[((k * cache->rows) + n) * align];
+            uint64_t cached = cache->data[((k * cache->rows) + n)];
             if (cached > 0){
-                //printf(" Cache Hit: (k:%llu, n:%llu, rp(k,n): %llu index: %llu\n", k,n, cached,
-                //        ((k * cache->rows) + n ) * align);
                 return cached;
             }
             else{
                 uint64_t acc;
                 acc = restricted_partitions(k+1, n, cache) + restricted_partitions(k, n-k, cache);
-                cache->data[((k * cache->rows) + n) * align] = acc;
-                //printf(" Cache Fail: (k:%llu, n:%llu, rp(k,n): %llu index: %llu\n", k,n, cached, 
-                //        ((k * cache->rows) + n ) * align);
+                cache->data[((k * cache->rows) + n)] = acc;
                 return acc;
             }
         }
@@ -59,7 +55,7 @@ int main(int argc, char **argv){
     void *memory = malloc((buffer.rows * buffer.cols * align) + (align -1));
     buffer.data = (uint64_t *) (((uintptr_t) memory + align - 1) & mask); /* Aligned pointer */
     memset(buffer.data, 0, buffer.rows * buffer.cols * align);
-    if (buffer.data == NULL){
+    if (memory == NULL){
         printf("Unable to reserve memory for cache\n");
         return -1;
     }
@@ -71,18 +67,6 @@ int main(int argc, char **argv){
         printf("Buffer.data: %p, %p\n", &buffer.data, buffer.data);
     }
 
-    // Print cache contents:
-    /*
-    for(uint64_t i = 0; i <= N; i++)
-        for(uint64_t j=0; j<=N; j++)
-        {
-        printf("Buffer pointer: %p, position: %p, offset: %llu val: %llu\n",  
-                buffer.data, 
-                buffer.data + (j*buffer.cols+i)*align,
-                (j*buffer.cols+i)*align,
-                *(buffer.data + (j*buffer.cols+i)*align));
-        }
-    */
     for(uint64_t n = 1; n <= N; n++){
         uint64_t pn = partitions(n, &buffer);
         printf("Computing p(%llu): %llu\n", n, pn);
