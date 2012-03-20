@@ -5,6 +5,7 @@
 #include <string.h>
 
 #define align sizeof(uint64_t)
+#define neg_one_pow(n) (((n) % 2 == 0) ? 1 : -1)
 
 typedef struct {
     uint64_t *data;
@@ -34,11 +35,49 @@ uint64_t restricted_partitions(uint64_t k, uint64_t n, cache_t *cache){
     }
 }
 
+
 uint64_t partitions(uint64_t n, cache_t *cache){
     uint64_t p = 2;
     for (uint64_t k = 1; k < (n/2); k++){
         p += restricted_partitions(k, n-k, cache);
     }
+    return p;
+}
+
+/*
+def partitions(n):
+    if n <=1 :
+        return 1
+    elif n == 2:
+        return 2
+    else:
+        j1 = [ (3*pow(k,2) -k)/2 for k in range(1, n)]
+        j2 = [ (3*pow(k,2) +k)/2 for k in range(1, n)]
+        js = [j for j in flatten(zip(j1,j2)) if j <= n]
+        p = 0
+        cpos = 0
+        for pos, j in enumerate(js):
+            if pos % 2 == 0:
+                cpos += 1
+            p += pow(-1, cpos - 1) * partitions(n-j)
+        return p
+*/
+
+uint64_t partitions_macmahon(uint64_t n, cache_t *cache){
+    uint64_t p = 0;
+    if (n <= 1) return 1;
+    else 
+        if (n == 2) return 2;
+        else{
+            for (uint64_t k = 1; k < n; k++){
+                uint64_t j1 = (3 * k * k - k)/2;
+                uint64_t j2 = (3 * k * k + k)/2;
+                if (j1 <=n) p+= neg_one_pow(k-1) * partitions_macmahon(n-j1, cache);
+                if (j2 <=n) p+= neg_one_pow(k-1) * partitions_macmahon(n-j2, cache);
+                if ((j1 > n) || (j2 > n)) break;
+            }
+
+        }
     return p;
 }
 
@@ -69,7 +108,8 @@ int main(int argc, char **argv){
 
     for(uint64_t n = 1; n <= N; n++){
         uint64_t pn = partitions(n, &buffer);
-        printf("Computing p(%llu): %llu\n", n, pn);
+        uint64_t pnm = partitions_macmahon(n, &buffer);
+        printf("Computing p(%llu): %llu, %llu\n", n, pn, pnm);
     }
     free(memory);
     return 0;
