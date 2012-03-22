@@ -2,9 +2,18 @@
 
 import random
 import fractions
+import itertools
+
+seed_chest = range(1,17)
+seed_chance = range(1,17)
+random.shuffle(seed_chest)
+random.shuffle(seed_chance)
+chest_gen = itertools.cycle(seed_chest)
+chance_gen = itertools.cycle(seed_chance)
 
 def chance(pos):
-    c = random.randint(1,16)
+    global chance_gen
+    c = chance_gen.next()
     if c == 1:
         return 10
     elif c == 2:
@@ -42,7 +51,8 @@ def community_chest(pos):
     chest[9] = next_utility
     chest[10] = lambda x: x-3 
     
-    c = random.randint(1,16)
+    global chest_gen
+    c = chest_gen.next()
     if type(chest[c]) == type(lambda x:x):
         return chest[c](pos)
     elif chest[c]:
@@ -75,7 +85,8 @@ board[36] = chance
 board[30] = lambda x: 10
 
 def main():
-    N = 10000000
+
+    N = 100000
     pos = 0
     visited = {n:0 for n in range(40)}
     doubles = 0
