@@ -2,8 +2,21 @@
 
 import sys
 import copy
-from math import exp,sqrt, floor,ceil
+from math import exp, sqrt, floor, ceil, log
 from utils import memoize
+from itertools import product, chain
+
+def partitions(n):
+    # base case of recursion: zero is the sum of the empty list
+    if n == 0:
+        yield []
+        return
+        
+    # modify partitions of n-1 to form partitions of n
+    for p in partitions(n-1):
+        yield [1] + p
+        if p and (len(p) < 2 or p[1] > p[0]):
+            yield [p[0] + 1] + p[1:]
 
 def ngen():
     m = 1
@@ -14,6 +27,13 @@ def ngen():
             if ((cand - 5) % 7) != 0 or ((cand - 6) % 11) != 0:
                 yield cand
         m += 1
+
+def gen5():
+    n = 1
+    while 1:
+        yield 5*n + 4
+        n += 1
+
 
 def hrlimit(n):
     sqrt3 = 1.7320508075688772
@@ -44,14 +64,45 @@ def nparts(n):
         p += rp(k, n-k)
     return p
 
+def flatten(listOfLists):
+    "Flatten one level of nesting"
+    return chain.from_iterable(listOfLists)
+
+@memoize
+def partitions(n):
+    if n <=1 :
+        return 1
+    elif n == 2:
+        return 2
+    else:
+        j1 = [ (3*pow(k,2) -k)/2 for k in range(1, n)]
+        j2 = [ (3*pow(k,2) +k)/2 for k in range(1, n)]
+        js = [j for j in flatten(zip(j1,j2)) if j <= n]
+        p = 0
+        cpos = 0
+        for pos, j in enumerate(js):
+            if pos % 2 == 0:
+                cpos += 1
+            p += pow(-1, cpos - 1) * partitions(n-j)
+        return p
+
+def main2():
+    # Last tested: 2358724
+    g = 1
+    n = 1
+    while n<12:
+        n += 1
+        np = partitions(n)
+        print n, np
+
+def sigma_gen():
+    exps = range(20)
+    abc = product(exps, repeat=3)
+    for item in abc:
+        a,b,c = item
+        n = pow(5,a) * pow(7,b) * pow(11,c)
+        print a,b,c,n, n % (int(1e6))
+
 if __name__ == "__main__":
-    cont = 0
-    candidate = 1
-    sys.setrecursionlimit = 10000
-    while cont < 50:
-        p = nparts(candidate)
-        if p % 64 == 0:
-            print candidate, p
-            cont +=1
-        candidate += 1
+    main2()
 
