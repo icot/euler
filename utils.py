@@ -43,7 +43,7 @@ def factors(num, primes = None):
                     cond = False
     return factors
 
-
+@memoize
 def phi(n, primes = None):
     f = list(set(factors(n, primes)))
     if f:
@@ -155,8 +155,8 @@ def test_hex(num, th = 1e-6):
         else:
             return False
 
-def ndivisors(num):
-    f = factors(num)
+def ndivisors(num, primes = None):
+    f = factors(num, primes)
     if f:
         exps = [f.count(item) for item in set(f)]
         return reduce(lambda x,y: x*y, map(lambda x: x+1, exps))

@@ -39,6 +39,33 @@ def main():
         print p
     print sum(perimeters)
 
+def main2():
+    result = 0
+    x, y = 2, 1
+    while 1:
+        # b = a + 1 
+        a3 = 2 * x-1
+        area3 = y * (x-2)
+        if a3 > 1e9:
+            break
+        if a3 > 0 and area3 > 0 and a3 % 3== 0 and area3 % 3 == 0:
+            a = a3/3
+            print a, 3*a+1
+            result += 3*a+1
+        # b = a - 1
+        a3 = 2 * x + 1
+        area3 = y * (x+2)
+        if a3 > 0 and area3 > 0 and a3 % 3== 0 and area3 % 3 == 0:
+            a = a3/3
+            print a, 3*a-1
+            result += 3*a-1
+        xn = 2*x + y *3
+        yn = 2*y + x
+        x = xn
+        y = yn
+    print result
+
+
 if __name__ == "__main__":
-    main()
+    main2()
 

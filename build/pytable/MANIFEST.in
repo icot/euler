@@ -1,0 +1,18 @@
+include MANIFEST.in
+include pytable/license.txt
+include readme.txt
+include setup.py
+
+recursive-include pytable *
+recursive-include pytable/doc *.html
+recursive-include pytable/doc/pydoc *.py
+recursive-include pytable/doc/style *.css
+recursive-include pytable/examples *
+exclude pytable/doc/pydoc *.html
+
+exclude *CVS*
+exclude *Cvs*
+exclude *.scc
+exclude *.pyc
+exclude *.pyo
+exclude *.cvsignore

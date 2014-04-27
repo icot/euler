@@ -42,7 +42,7 @@
   (let* ((pn (partitions n cached_values))
          (mod (remainder pn 1000000)))
     (begin
-      (printf "n: ~A mod: ~A p(n): ~A\n" n mod pn)
+      (printf "n: ~A mod: ~A \n" n mod)
       (if (= mod 0)
         #t
         (main (add1 n))))))

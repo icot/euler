@@ -1,0 +1,4117 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+
+
+
+
+
+
+  
+  
+  
+  
+  
+  
+  <meta content="text/html; charset=windows-1252" http-equiv="Content-Type">
+
+
+
+
+
+
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  <title>PyTable RDBMS Middleware</title>
+  <link href="style/sitestyle.css" type="text/css" rel="stylesheet">
+</head>
+
+
+<body style="background-color: rgb(255, 255, 255); color: rgb(0, 0, 0);" alink="#008000" link="#000080" vlink="#800080">
+
+
+
+
+
+
+<h1>PyTable RDBMS Wrapper<br>
+
+
+
+
+
+
+</h1>
+
+
+
+
+
+
+<p>PyTable is a relational database wrapper based on <a href="http://basicproperty.sourceforge.net/">BasicProperty</a>'s rich
+property-based modeling system.&nbsp; PyTable provides a "thick"
+wrapper for PostgreSQL (and MySQL) database adapters which fills in
+missing functionality in the adapter layer to provide a uniform rich
+external API.<br>
+
+
+
+
+
+
+</p>
+
+
+
+
+
+
+<ul>
+
+
+
+
+
+
+  <li>Provides mechanisms for modeling database schemas using Python
+objects</li>
+
+
+
+
+
+
+  
+  
+  
+  
+  
+  
+  <ul>
+
+
+
+
+
+
+    <li>Objects use rich descriptors which are able to directly query
+their source database schema</li>
+
+
+
+
+
+
+    <li>Can generate SQL statements to create the database from the
+schema</li>
+
+
+
+
+
+
+    <li>Provides name lookup for tables, fields etc.</li>
+
+
+
+
+
+
+  
+  
+  
+  
+  
+  
+  </ul>
+
+
+
+
+
+
+  <li>Provides rich query object for composing SQL queries</li>
+
+
+
+
+
+
+  
+  
+  
+  
+  
+  
+  <ul>
+
+
+
+
+
+
+    <li>Two-level substitution (raw SQL syntax and SQL values)</li>
+
+
+
+
+
+
+    <li>Post-processing hooks</li>
+
+
+
+
+
+
+    <li>Multi-value data-set requests</li>
+
+
+
+
+
+
+  
+  
+  
+  
+  
+  
+  </ul>
+
+
+
+
+
+
+  <li>Can introspect databases to generate database schema objects (and code descriptions of those schemas)</li>
+
+
+
+
+
+
+  <li>Provides pickleable connection-specification objects which can be
+used to open database connections without needing any other lookups</li>
+
+
+
+
+
+
+  <li>Provides some DB-API "extension" features even if the features
+are not present in the underlying database</li>
+
+
+
+
+
+
+  
+  
+  
+  
+  
+  
+  <ul>
+
+
+
+
+
+
+    <li>Iterable cursors</li>
+
+
+
+
+
+
+    <li>Rich row-objects</li>
+
+
+
+
+
+
+  
+  
+  
+  
+  
+  
+  </ul>
+
+
+
+
+
+
+  <li>Provides a rudimentary Object-Relational mapper object</li>
+
+
+
+
+
+
+  
+  
+  
+  
+  
+  
+  <ul>
+
+
+
+
+
+
+    <li>Insert (including optional retrieval-on-insertion), update and
+delete queries built-in</li>
+
+
+
+
+
+
+    <li>Linked to the database schema, fields become property
+descriptors, and objects track their "dirty" status<br>
+
+
+
+
+
+
+    </li>
+
+
+
+
+
+
+    <li>Table schemas can declare object-relational mapper classes</li>
+
+
+
+
+
+
+  
+  
+  
+  
+  
+  
+  </ul>
+
+
+
+
+
+
+</ul>
+
+
+
+
+
+
+<p>PyTable is not an Object-Relational mapper as such. Instead it is a
+middle-level interface which takes care of much of the bookkeeping
+normally required of an application using the <a href="http://www.python.org/peps/pep-0249.html">DB-API</a>.&nbsp; Code
+using PyTable is still focused on RDBMS development, it simply has a
+number of (considerable) shortcuts in the development process.<br>
+
+
+
+
+
+
+</p>
+
+
+
+
+
+
+<p>PyTable was originally created as part of the <a href="http://wxpypropdist.sourceforge.net/">wxPython Properties
+Distribution</a>, as an attempt to enable simple RDBMS-based
+applications.&nbsp; The code is under daily use, but is not yet widely
+used.&nbsp; It is released under a BSD-style license. PyTable can be
+downloaded from the <a href="https://sourceforge.net/projects/pytable/">project
+page</a> on <a href="http://sourceforge.net/">SourceForge</a>.&nbsp;
+You will
+need the <a href="http://sourceforge.net/projects/basicproperty/">BasicProperty</a>
+package
+installed to use it.&nbsp; There's not a lot of documentation at the
+moment, but there is the <a href="pydoc/pytable.html">pydoc reference</a>
+available.<br>
+
+
+
+
+
+
+</p>
+
+
+
+
+
+
+<h2>Usage</h2>
+
+
+
+
+
+
+<p>PyTable is not a very large project.&nbsp; It's basically just a
+wrapper around the DB-API to make DB-API-like programming a little
+easier.&nbsp; However, the patterns of programming you use with PyTable
+tend to be different than those you'd use with raw DB-API code, as the
+bookkeeping services of PyTable make it very convenient to refer to the
+schema objects in order to direct and control your SQL queries.<br>
+
+
+
+
+
+
+</p>
+
+
+
+
+
+
+<h3>Creating Specifiers and Connections<br>
+
+
+
+
+
+
+</h3>
+
+
+
+
+
+
+<p>PyTable generally uses propertied objects for representing any
+database-based object.&nbsp; This includes the specifiers describing a
+database connection.&nbsp; The DBSpecifier object is responsible for
+looking up the appropriate database driver, and using that driver to
+create a database connection.<br>
+
+
+
+
+
+
+</p>
+
+
+
+
+
+
+<p>For example, let's create a database specifier for connecting to our
+local database:<br>
+
+
+
+
+
+
+</p>
+
+
+
+
+
+
+<pre>"""Simple connection example<br><br>This just shows how to use a dbspecifier<br>object to connect to a particular database.<br><br>Note: you need a database named test running<br>on the specified host, with given user and<br>password to run this script!<br>"""<br>from pytable import dbspecifier<br><br>specifier = dbspecifier.DBSpecifier(<br>	drivername = "PyPgSQL",<br>	host = "localhost",<br>	user = "test",<br>	password = "password",<br>	database = "test",<br>)<br><br>driver, connection = specifier.connect( )<br>print "Driver:", driver<br>print "Connection:", connection<br></pre>
+
+
+
+
+
+
+<p>Now, just to show that we're actually just a regular DB-API-style
+interface, we will do something that you would normally never do with
+PyTable, we'll use the raw connection/cursor to prove that the
+connection is active.<br>
+
+
+
+
+
+
+</p>
+
+
+
+
+
+
+<pre>cursor = connection.cursor()<br>cursor.execute( """SELECT 42;""" )<br>print "Life:", cursor.fetchall()<br></pre>
+
+
+
+
+
+
+<p>And that's it.&nbsp; Selecting a different database is simply a
+matter of specifying a different drivername.&nbsp; You can store
+DBSpecifier objects in pickles, so you can allow your users to edit
+them and save the edited values to reconnect to the same database.<br>
+
+
+
+
+
+
+</p>
+
+
+
+
+
+
+<table style="width: 80%; text-align: left; margin-left: auto; margin-right: auto;" cellspacing="3">
+
+
+
+
+
+
+  <tbody>
+
+
+
+
+
+
+    <tr>
+
+
+
+
+
+
+      <th style="vertical-align: top; text-align: left;">Driver Name<br>
+
+
+
+
+
+
+      </th>
+
+
+
+
+
+
+      <th style="vertical-align: top;">Implementation Class<br>
+
+
+
+
+
+
+      </th>
+
+
+
+
+
+
+      <th style="vertical-align: top;">Description<br>
+
+
+
+
+
+
+      </th>
+
+
+
+
+
+
+    </tr>
+
+
+
+
+
+
+    <tr valign="top">
+
+
+
+
+
+
+      <th style="text-align: left;">SQLite</th>
+
+
+
+
+
+
+      <td>pytable.pysqlite.sqlitedriver.SQLiteDriver</td>
+
+
+
+
+
+
+      <td>SQLite via PySQLite</td>
+
+
+
+
+
+
+    </tr>
+
+
+
+
+
+
+    <tr valign="top">
+
+
+
+
+
+
+      <th style="text-align: left;">MkSQL</th>
+
+
+
+
+
+
+      <td>pytable.mk.mkdriver.MkDriver</td>
+
+
+
+
+
+
+      <td>Metakit via MkSQL (unfinished)<br>
+
+
+
+
+
+
+      </td>
+
+
+
+
+
+
+    </tr>
+
+
+
+
+
+
+    <tr valign="top">
+
+
+
+
+
+
+      <th style="text-align: left;">PyPgSQL</th>
+
+
+
+
+
+
+      <td>pytable.pypgsql.pgdriver.PGDriver</td>
+
+
+
+
+
+
+      <td>PostgreSQL via PyPgSQL</td>
+
+
+
+
+
+
+    </tr>
+
+
+
+
+
+
+    <tr valign="top">
+
+
+
+
+
+
+      <th style="text-align: left;">PyGreSQL</th>
+
+
+
+
+
+
+      <td>pytable.pygresql.pgdriver.PGDriver</td>
+
+
+
+
+
+
+      <td>PostgreSQL via PyGreSQL</td>
+
+
+
+
+
+
+    </tr>
+
+
+
+
+
+
+    <tr valign="top">
+
+
+
+
+
+
+      <th style="text-align: left;">psycopg</th>
+
+
+
+
+
+
+      <td>pytable.psycopg.psycodriver.PsycoDriver</td>
+
+
+
+
+
+
+      <td>PostgreSQL via psycopg</td>
+
+
+
+
+
+
+    </tr>
+
+
+
+
+
+
+    <tr valign="top">
+
+
+
+
+
+
+      <th style="text-align: left;">MySQL</th>
+
+
+
+
+
+
+      <td>pytable.mysql.mydriver.MyDriver</td>
+
+
+
+
+
+
+      <td>MySQL via MySQLdb</td>
+
+
+
+
+
+
+    </tr>
+
+
+
+
+
+
+  
+  
+  
+  
+  
+  
+  </tbody>
+</table>
+
+
+
+
+
+
+<br>
+
+
+
+
+
+
+<h3>Creating Schemas Manually<br>
+
+
+
+
+
+
+</h3>
+
+
+
+
+
+
+<p>Most of the time when using PyTable, you work with a predefined
+database schema tree.&nbsp; This tree allows for looking up particular
+tables/fields/constraints at runtime, associating particular
+row/result-set classes with tables, and generally storing most of the
+relevant information about your database design in a convenient
+in-memory format.<br>
+
+
+
+
+
+
+</p>
+
+
+
+
+
+
+<p>For most application development, you create the database schema
+directly, specifying each table and field in the Python code,
+specifying constraints and comments regarding each table as you
+go.&nbsp; This example shows how you would create such a schema.<br>
+
+
+
+
+
+
+</p>
+
+
+
+
+
+
+<pre>"""Example of manually creating a database schema<br><br>There are two normal ways to create database schemas<br>for use with pytable.  This approach, (manually creating<br>the description using the schemabuilder module) is the<br>more common "application" development pattern, while the<br>reverse engineering mechanism is more commonly used for<br>"scripts" which need to deal with existing databases.<br>"""<br>from pytable.schemabuilder import *<br></pre>
+
+
+
+
+
+
+<p>The <a href="pydoc/pytable.schemabuilder.html">schemabuilder module</a>
+is just a convenience wrapper around the classes defined in the
+dbschema module.&nbsp; You will likely want to refer to the <a href="pydoc/pytable.dbschema.html">dbschema pydoc</a>
+reference to see
+all the various properties associated with the various schema
+sub-types.&nbsp; You can also check the table at the end of this
+section which shows the various schema classes and their associated
+schemabuilder aliases.<br>
+
+
+
+
+
+
+</p>
+
+
+
+
+
+
+<pre><br>schema = database(<br>    name = "test",<br>    comment = """A simple testing database""",<br></pre>
+
+
+
+
+
+
+<p>Most schema objects have a comment property, currently these are
+used solely for documentation purposes, but eventually they may
+generate "COMMENT" declarations in the database.<br>
+
+
+
+
+
+
+</p>
+
+
+
+
+
+
+<pre>    tables = [<br>        table(<br>            "pets",<br>            comment ="""Storage for simple pets information""",<br>            fields = [<br>                field(<br>                    "pet_name", "text", 0, """The name of the pet""",<br>                    defaultValue = "'stringValue'",<br></pre>
+
+
+
+
+
+
+<p>The positional arguments to the "field" function are: field-name,
+SQL-field-type, SQL-field-size, and comment</p>
+
+
+
+
+
+
+<p>Note the use of the raw SQL syntax for the defaultValue
+declaration.&nbsp; This allows you to include arbitrary SQL code,
+including calls out to sequences, functions and the like.<br>
+
+
+
+
+
+
+</p>
+
+
+
+
+
+
+<pre>                    constraints = [ primary(), notNull() ],<br></pre>
+
+
+
+
+
+
+<p>Constraints on the field are specified as a list of constraint
+objects.<br>
+
+
+
+
+
+
+</p>
+
+
+
+
+
+
+<pre>                ),<br>                field(<br>                    "pet_age", "integer", 0, """The age of the pet""",<br>                    constraints = [ notNull() ],<br>                ),<br>            ],<br>        ),<br>        table(<br>            "houses",<br>            comment ="""Storage for simple house information""",<br>            fields = [<br>                field(<br>                    "house_id", "serial", 0, """Unique house identifier""",<br></pre>
+
+
+
+
+
+
+<p>The use of the serial data type limits this schema to use on
+PostgreSQL databases.&nbsp; PyTable doesn't know anything about the
+data type, and won't warn you about such situations until you try to
+move the schema to another database.<br>
+
+
+
+
+
+
+</p>
+
+
+
+
+
+
+<pre>                    constraints = [ primary(), notNull() ],<br>                ),<br>                field(<br>                    "type", "text", 0, """The type of the house""",<br>                    constraints = [ notNull()],<br>                ),<br>            ],<br>            defaultRecords = [<br>                { 'type': 'cage' },<br>                { 'type': 'dog house' },<br>                { 'type': 'dog basket' },<br>                { 'type': 'cat basket' },<br>                { 'type': 'bowl' },<br>                { 'type': 'acquarium' },<br>            ],<br></pre>
+
+
+
+
+
+
+<p>The defaultRecords property stores a list of dictionaries (or
+dictionary-like objects) which are used to generate INSERT statements
+during SQL generation.&nbsp; The INSERT statements are produced after
+all other table-related statements as of version 0.5.9<br>
+
+
+
+
+
+
+</p>
+
+
+
+
+
+
+<pre>            indices = [<br>                index( unique=1, fields=('type', ) ),<br>            ],<br>        ),<br>        table(<br>            "house_pets",<br>            comment = """Stupid word-play mapping pet: house""",<br>            fields = [<br>                field(<br>                    'house_id', 'integer', 0, """Reference to the house""",<br>                    constraints = [<br>                        foreignKey(<br>                            "houses", # uses primary key by default...<br>                            onDelete = "CASCADE",<br>                            onUpdate = "CASCADE",<br>                        ),<br></pre>
+
+
+
+
+
+
+<p>Foreign key constraints are specified much the same as any other
+constraint, the first two positional arguments are the foreign table
+and list of foreign fields to which the foreign key refers.&nbsp; If
+using the primary key of the foreign table (as above) you may omit the
+foreign fields argument entirely.&nbsp; The onDelete and onUpdate
+properties of the constraint allow for specifying the reactions to
+these events (referenced-record deletion, and referenced-record
+key-value change).<br>
+
+
+
+
+
+
+</p>
+
+
+
+
+
+
+<pre>                        notNull(),<br>                    ],<br>                ),<br>                field(<br>                    'pet_name', 'text', 0, """Reference to the pet""",<br><br>                ),<br>            ],<br>            constraints = [<br>                foreignKey(<br>                    "pets", # foreign table which constrains<br>                    ("pet_name",), # foreign fields which constrain<br>                    fields = ("pet_name",), # local fields constrained<br>                    onDelete = "SET NULL",<br>                    onUpdate = "CASCADE",<br>                ),<br></pre>
+
+
+
+
+
+
+<p>Table constraints are specified in almost the same way as field
+constraints, the difference being that the "fields" property of the
+constraint becomes necessary to specify which fields are being
+constrained.<br>
+
+
+
+
+
+
+</p>
+
+
+
+
+
+
+<pre>            ],<br>        ),<br>    ],<br>)<br></pre>
+
+
+
+
+
+
+<table style="width: 90%; text-align: left; margin-left: auto; margin-right: auto;" border="1" cellpadding="2" cellspacing="2">
+
+
+
+
+
+
+  <tbody>
+
+
+
+
+
+
+    <tr>
+
+
+
+
+
+
+      <td style="vertical-align: top; text-align: center; background-color: rgb(255, 204, 204);">Class<br>
+
+
+
+
+
+
+      </td>
+
+
+
+
+
+
+      <td style="vertical-align: top; text-align: center; background-color: rgb(255, 204, 204);"><a href="pydoc/pytable.schemabuilder.html">Schema Builder</a> Names
+(definition)<br>
+
+
+
+
+
+
+      </td>
+
+
+
+
+
+
+      <td style="vertical-align: top; text-align: center; background-color: rgb(255, 204, 204);">Description<br>
+
+
+
+
+
+
+      </td>
+
+
+
+
+
+
+    </tr>
+
+
+
+
+
+
+    <tr>
+
+
+
+
+
+
+      <td style="vertical-align: top;"><a href="pydoc/pytable.dbschema.html#DatabaseSchema">DatabaseSchema<br>
+
+
+
+
+
+
+      </a></td>
+
+
+
+
+
+
+      <td style="vertical-align: top;">database( name, tables=(),
+comment="", **named )<br>
+
+
+
+
+
+
+      </td>
+
+
+
+
+
+
+      <td style="vertical-align: top;">Schema for an overall database
+object<br>
+
+
+
+
+
+
+      </td>
+
+
+
+
+
+
+    </tr>
+
+
+
+
+
+
+    <tr>
+
+
+
+
+
+
+      <td style="vertical-align: top;"><a href="pydoc/pytable.dbschema.html#IndexSchema">IndexSchema</a><br>
+
+
+
+
+
+
+      </td>
+
+
+
+
+
+
+      <td style="vertical-align: top;">index( fields=(), unique=1,
+**named )<br>
+
+
+
+
+
+
+      </td>
+
+
+
+
+
+
+      <td style="vertical-align: top;">Schema for defining a particular
+index (on a particular table)<br>
+
+
+
+
+
+
+      </td>
+
+
+
+
+
+
+    </tr>
+
+
+
+
+
+
+    <tr>
+
+
+
+
+
+
+      <td style="vertical-align: top;"><a href="pydoc/pytable.dbschema.html#TableSchema">TableSchema</a><br>
+
+
+
+
+
+
+      </td>
+
+
+
+
+
+
+      <td style="vertical-align: top;">table( name, fields=(),
+comment="", **named )<br>
+
+
+
+
+
+
+      </td>
+
+
+
+
+
+
+      <td style="vertical-align: top;">High-level representation of a
+table's structure/schema<br>
+
+
+
+
+
+
+      </td>
+
+
+
+
+
+
+    </tr>
+
+
+
+
+
+
+    <tr>
+
+
+
+
+
+
+      <td style="vertical-align: top;"><a href="pydoc/pytable.dbschema.html#FieldSchema">FieldSchema</a><br>
+
+
+
+
+
+
+      </td>
+
+
+
+
+
+
+      <td style="vertical-align: top;">field( name, dbDataType,
+displaySize=0, comment="", **named )<br>
+
+
+
+
+
+
+      </td>
+
+
+
+
+
+
+      <td style="vertical-align: top;">Schema for a particular field of
+a table<br>
+
+
+
+
+
+
+      </td>
+
+
+
+
+
+
+    </tr>
+
+
+
+
+
+
+    <tr>
+
+
+
+
+
+
+      <td style="vertical-align: top;"><a href="pydoc/pytable.dbschema.html#SequenceSchema">SequenceSchema</a><br>
+
+
+
+
+
+
+      </td>
+
+
+
+
+
+
+      <td style="vertical-align: top;">sequence( name, comment="",
+**named )<br>
+
+
+
+
+
+
+count<br>
+
+
+
+
+
+
+      </td>
+
+
+
+
+
+
+      <td style="vertical-align: top;">A sequence object used for
+implementing e.g. serial fields<br>
+
+
+
+
+
+
+      </td>
+
+
+
+
+
+
+    </tr>
+
+
+
+
+
+
+    <tr>
+
+
+
+
+
+
+      <td style="vertical-align: top;"><a href="pydoc/pytable.dbschema.html#ForeignKeyConstraint">ForeignKeyConstraint</a><br>
+
+
+
+
+
+
+      </td>
+
+
+
+
+
+
+      <td style="vertical-align: top;">foreignKey( foreignTable,
+foreignFields=(), comment="", **named )<br>
+
+
+
+
+
+
+foreign<br>
+
+
+
+
+
+
+references<br>
+
+
+
+
+
+
+      </td>
+
+
+
+
+
+
+      <td style="vertical-align: top;">Foreign-key constraint for a
+field or table<br>
+
+
+
+
+
+
+      </td>
+
+
+
+
+
+
+    </tr>
+
+
+
+
+
+
+    <tr>
+
+
+
+
+
+
+      <td style="vertical-align: top;"><a href="pydoc/pytable.dbschema.html#CheckConstraint">CheckConstraint</a><br>
+
+
+
+
+
+
+      </td>
+
+
+
+
+
+
+      <td style="vertical-align: top;">check( expression, **named )<br>
+
+
+
+
+
+
+      </td>
+
+
+
+
+
+
+      <td style="vertical-align: top;">An SQL-statement CHECK constraint<br>
+
+
+
+
+
+
+      </td>
+
+
+
+
+
+
+    </tr>
+
+
+
+
+
+
+    <tr>
+
+
+
+
+
+
+      <td style="vertical-align: top;"><a href="pydoc/pytable.dbschema.html#PrimaryConstraint">PrimaryConstraint</a><br>
+
+
+
+
+
+
+      </td>
+
+
+
+
+
+
+      <td style="vertical-align: top;">primary<br>
+
+
+
+
+
+
+primaryKey<br>
+
+
+
+
+
+
+      </td>
+
+
+
+
+
+
+      <td style="vertical-align: top;">(Possibly multi-field)
+primary-key unique constraint<br>
+
+
+
+
+
+
+      </td>
+
+
+
+
+
+
+    </tr>
+
+
+
+
+
+
+    <tr>
+
+
+
+
+
+
+      <td style="vertical-align: top;"><a href="pydoc/pytable.dbschema.html#UniqueConstraint">UniqueConstraint</a><br>
+
+
+
+
+
+
+      </td>
+
+
+
+
+
+
+      <td style="vertical-align: top;">unique<br>
+
+
+
+
+
+
+      </td>
+
+
+
+
+
+
+      <td style="vertical-align: top;">(Possibly Multi-field)
+unique-value constraint<br>
+
+
+
+
+
+
+      </td>
+
+
+
+
+
+
+    </tr>
+
+
+
+
+
+
+    <tr>
+
+
+
+
+
+
+      <td style="vertical-align: top;"><a href="pydoc/pytable.dbschema.html#NotNullConstraint">NotNullConstraint</a><br>
+
+
+
+
+
+
+      </td>
+
+
+
+
+
+
+      <td style="vertical-align: top;">notNull<br>
+
+
+
+
+
+
+      </td>
+
+
+
+
+
+
+      <td style="vertical-align: top;">A field's not-null constraint<br>
+
+
+
+
+
+
+      </td>
+
+
+
+
+
+
+    </tr>
+
+
+
+
+
+
+  
+  
+  
+  
+  
+  
+  </tbody>
+</table>
+
+
+
+
+
+
+<h3>Generating SQL Statements from a Schema</h3>
+
+
+
+
+
+
+<p>Since we have manually created our schema above, we would likely
+want to generate SQL statements for building the schema inside a
+database.&nbsp; This process is fairly straightforward, an
+"SQLCreateStatements" object is instantiated, and then called with the
+schema as argument.&nbsp; It produces a sequence of SQL statements
+which will create the schema through a database connection (note that
+the SQL statements do not include creating the database itself, only
+the tables and sequences within the database schema).<br>
+
+
+
+
+
+
+</p>
+
+
+
+
+
+
+<pre>"""Generate DB structure from manual declaration<br><br>This example imports the previously created<br>example schema and generates the SQL statements<br>required to build that schema.<br><br>The sqlgeneration module provides the actual SQL<br>statement generation.  The sqlquery module is<br>used to run the SQL statements.<br>"""<br>from pytable import dbspecifier, sqlgeneration, sqlquery<br>import example_schema<br><br>specifier = dbspecifier.DBSpecifier(<br>    drivername = "PyPgSQL",<br>    host = "localhost",<br>    user = "test",<br>    password = "password",<br>    database = "test",<br>)<br><br>driver, connection = specifier.connect( )<br><br>generator = sqlgeneration.SQLCreateStatements(<br>    # driver can be used to customise what's generated...<br>    driver,<br>)<br># call the generator with the schema as argument<br>statements = generator( example_schema.schema )<br>for statement in statements:<br>    print statement # just so we see what's being executed<br>    sqlquery.SQLQuery( sql = statement )( connection )<br><br># as with the DB-API, autoCommit is false by default, so<br># everything we've done will disappear when we exit...</pre>
+
+
+
+
+
+
+<p>In real world situations, you would normally use: SQLDropStatements,
+SQLCreateStatements, SQLGrantStatements and SQLRevokeStatements (in
+order) to drop any previous table/sequences, and establish some useful
+access restrictions.&nbsp; All of the statement generators work in the
+same way, save that Grant and Revoke have the properties; privileges
+(list
+of privilege-description strings), users (list of user/group names) and
+isGroup (whether the names are groups or users).<br>
+
+
+
+
+
+
+</p>
+
+
+
+
+
+
+<h3>Query Objects (Usage)<br>
+
+
+
+
+
+
+</h3>
+
+
+
+
+
+
+<p>Generating SQL query strings tends to be a rather tedious and
+error-prone task, however, in the end, people working with databases
+professionally do tend to know how to sling SQL, so we'd like to let
+them use that SQL knowledge to query their databases.&nbsp; In
+particular, we need a way to build up query strings from a number of
+different types of elements:<br>
+
+
+
+
+
+
+</p>
+
+
+
+
+
+
+<ul>
+
+
+
+
+
+
+  <li>a "root" template into which everything else is substituted</li>
+
+
+
+
+
+
+  <li>fragments of SQL syntax (e.g. WHERE clauses, or escaped SQL
+values)</li>
+
+
+
+
+
+
+  <li>data-values which require escaping/formatting by the database
+driver</li>
+
+
+
+
+
+
+</ul>
+
+
+
+
+
+
+PyTable's approach to this set of problems is the <a href="pydoc/pytable.sqlquery.html">SQLQuery</a> object.&nbsp; This
+class is both a base class from which you can derive "complex" queries,
+and a readily-used mechanism for performing simple queries.<br>
+
+
+
+
+
+
+<p>SQLQuery objects have two levels of escaping/substitution of named
+parameters:<br>
+
+
+
+
+
+
+</p>
+
+
+
+
+
+
+<ul>
+
+
+
+
+
+
+  <li>the first level is for use in substituting in fragments of SQL
+syntax, such as WHERE clauses</li>
+
+
+
+
+
+
+  <li>the second level substitutes in data-values via the driver's
+escaping mechanism.</li>
+
+
+
+
+
+
+</ul>
+
+
+
+
+
+
+<p>they are callable objects which can have their __call__ method
+overridden, and/or can have their "processResults" method overridden to
+alter how the result cursor is treated.<br>
+
+
+
+
+
+
+</p>
+
+
+
+
+
+
+<p>Here's a simple example of using an SQLQuery object without
+subclassing:<br>
+
+
+
+
+
+
+</p>
+
+
+
+
+
+
+<pre>import build, example_schema<br>from pytable import sqlquery<br><br>query = sqlquery.SQLQuery(<br>    sql = """INSERT INTO<br>        pets(pet_name,pet_age)<br>    VALUES<br>        (%%(pet_name)s,%%(pet_age)s);""",<br>)<br></pre>
+
+
+
+
+
+
+<p>Note the user of %% formatting for raw data-values.&nbsp; We don't
+want to substitute the values in as raw SQL (a single %), we want them
+to go through the driver's data-value escaping.<br>
+
+
+
+
+
+
+</p>
+
+
+
+
+
+
+<pre>query(<br>    build.connection,<br></pre>
+
+
+
+
+
+
+<p>Note the need to pass in a connection or cursor object as the first
+parameter.<br>
+
+
+
+
+
+
+</p>
+
+
+
+
+
+
+<pre>    pet_name = 'Tweety',<br>    pet_age = 3,<br>)<br><br>cursor = sqlquery.SQLQuery(<br>    sql = """SELECT * FROM pets %(whereClause)s;""",<br></pre>
+
+
+
+
+
+
+<p>Note the single % for fragments of SQL syntax.<br>
+
+
+
+
+
+
+</p>
+
+
+
+
+
+
+<pre>)(<br>    build.connection,<br>    whereClause = "WHERE pet_name = %(name)s",<br></pre>
+
+
+
+
+
+
+<p>Note that, within fragments which are substituted into the query,
+data-value substitution parameters need only a single %.&nbsp; In other
+words, the fragment is showing up after the first substitution pass, so
+it only needs the single escaping.<br>
+
+
+
+
+
+
+</p>
+
+
+
+
+
+
+<pre>    name = "Tweety",<br>)<br>for row in cursor:<br>    print 'Row:', row<br></pre>
+
+
+
+
+
+
+<p>This last works because the dbcursor class provides an iteration
+method.<br>
+
+
+
+
+
+
+</p>
+
+
+
+
+
+
+<p class="technical">The SQLQuery object has two properties, sql, which
+stores the SQL query string, and debug, which is a boolean indicating
+whether the query should print debugging information to the console
+when running.&nbsp; The debugging information is the query after it's
+first substitution pass (i.e. just before the driver is given the
+data-values to escape), and the set of arguments to the query at that
+point.&nbsp; More precisely, the debug print happens just before the
+cursor.execute operation.<br>
+
+
+
+
+
+
+</p>
+
+
+
+
+
+
+<h3>Query Objects (Subclassing)<br>
+
+
+
+
+
+
+</h3>
+
+
+
+
+
+
+<p>SQLQuery objects are designed to be sub-classed.&nbsp; In particular
+we would often like to be able to specify:<br>
+
+
+
+
+
+
+</p>
+
+
+
+
+
+
+<ul>
+
+
+
+
+
+
+  <li>how to call the query (i.e. parameters, and ways to process those
+parameters for inclusion in the query)</li>
+
+
+
+
+
+
+  <li>what to do with the result-set/cursor that's returned once the
+query is returned</li>
+
+
+
+
+
+
+</ul>
+
+
+
+
+
+
+<p>Normally we sub-class the query objects in order to create a
+reusable query that needs a great deal of paramaterisation or
+post-processing of the results and which is used from a number of
+different places.&nbsp; Customising the SQLQuery object normally occurs
+by overriding either __call__ or processResults.<br>
+
+
+
+
+
+
+</p>
+
+
+
+
+
+
+<p>The first sample demonstrates overriding __call__ to pre-process
+query arguments, in this case, to allow either the primary key of a
+table, or a row-record for the table to be passed as the determinant
+for a WHERE clause.<br>
+
+
+
+
+
+
+</p>
+
+
+
+
+
+
+<pre>from pytable import sqlquery<br><br>class FindHouses( sqlquery.SQLQuery ):<br>	"""Queries database for houses by pet_name or pet<br>	"""<br>	sql = """SELECT h.*<br>	FROM<br>		houses h, house_pets hp<br>	WHERE<br>		hp.pet_name = %%(pet)s -- note use of doubled percent signs!<br>	AND<br>		h.house_id = hp.house_id<br>	;"""<br>	def __call__( self, cursor, pet, **named ):<br>		"""Coerce pet to pet_name and then execute query"""<br>		if not isinstance( pet, (str,unicode)):<br>			name = getattr( pet, 'pet_name', None )<br>			if name is None or not isinstance( name, (str,unicode)):<br>				raise TypeError( """%r instance %s could not be coerced to a pet_name"""%(<br>					pet.__class__, pet,<br>				))<br>			pet = name<br>		return super( FindHouses, self ).__call__(<br>			cursor,<br>			pet = pet,<br>			**named<br>		)<br></pre>
+
+
+
+
+
+
+<p class="technical">Note that the sql property of the
+sqlquery.SQLQuery class is being hidden by the "sql" attribute defined
+in the subclass.</p>
+
+
+
+
+
+
+<p>The second sample demonstrates overriding processResults to return
+something other than the default cursor object from a query:<br>
+
+
+
+
+
+
+</p>
+
+
+
+
+
+
+<pre>class ListDatabases( sqlquery.SQLQuery ):<br>	"""Queries PostgreSQL server for list of database-names<br><br>	returns a simple list of string names<br>	"""<br>	sql = """SELECT datname FROM pg_database <br>	WHERE datname != 'template1' AND datname != 'template0'<br>	"""<br>	def processResults( self, cursor, **namedarguments ):<br>		"""Read database name list from cursor"""<br>		return [ row[0] for row in cursor.fetchall() ]<br></pre>
+
+
+
+
+
+
+<p>processResults receives the cursor which executed the query as the
+first positional argument, and all other arguments to the query as
+named arguments.<br>
+
+
+
+
+
+
+</p>
+
+
+
+
+
+
+<h3>LazyResultSet and DBResultSet<br>
+
+
+
+
+
+
+</h3>
+
+
+
+
+
+
+<p>The results of an <a href="pydoc/pytable.sqlquery.html#SQLQuery">SQLQuery</a>
+are normally a <a href="pydoc/pytable.dbcursor.html#DBCursor">DBCursor</a>
+object.&nbsp;
+This is
+a fairly minimal wrapper around a DB-API cursor, just providing
+generator-based iteration and a pointer back to the connection from
+which the cursor
+was created. Often we want a more list-like operation, particularly the
+ability to access results in random-access order.&nbsp; We'd often like
+to be able to do this without loading the whole result-set at once as
+well.<br>
+
+
+
+
+
+
+</p>
+
+
+
+
+
+
+<p><a href="pydoc/pytable.lazyresultset.html#LazyResultSet">LazyResultSet</a>
+provides these semantics, loading and wrapping rows
+from the cursor and caching the wrapped rows to allow for random-access
+operation.&nbsp; The <a href="pydoc/pytable.dbresultset.html#DBResultSet">DBResultSet</a>
+object simply adds a pointer to a
+table-schema to which attribute access is delegated.<br>
+
+
+
+
+
+
+</p>
+
+
+
+
+
+
+<h3>Table and Field Implementation Classes</h3>
+
+
+
+
+
+
+<p><a href="pydoc/pytable.dbschema.html#TableSchema">TableSchema</a>
+and <a href="pydoc/pytable.dbschema.html#FieldSchema">FieldSchema</a>
+objects and their methods, also <a href="pydoc/pytable.dbrow.html#DBRow">DBRow</a> and <a href="pydoc/pytable.dbproperty.html#DBProperty">DBProperty</a>.</p>
+
+
+
+
+
+
+<h3>Database Introspection Facilities</h3>
+
+
+
+
+
+
+<p>PyTable has support for querying PostgreSQL, SQLite and MySQL
+databases to obtain general schema information about the current
+database.&nbsp; These queries include listing of active databases,
+tables and fields within those tables.&nbsp; Introspection facilities
+are used like so:<br>
+
+
+
+
+
+
+</p>
+
+
+
+
+
+
+<pre>driver, connection = specifier.connect()<br>if hasattr( driver, 'listDatabases'):<br>	result = driver.listDatabases( connection )<br>	assert result, """0 databases on server? %s"""%(specifier)<br>if hasattr( driver, 'listTables' ):<br>	tables = driver.listTables( connection )<br>	if hasattr( driver, 'listIndices' ):<br>		for table in tables:<br>			result = driver.listIndices( connection, tableName=table )<br>	if hasattr( driver, 'attrDescription'):<br>		for table in tables:<br>			cursor = driver.attrDescription( connection, tableName=table )<br>	if hasattr( driver, 'attrDefault'):<br>		for table in tables:<br>			cursor = driver.attrDefault( connection, tableName=table )<br></pre>
+
+
+
+
+
+
+<h2>Changes</h2>
+
+
+
+
+
+
+<p>There are two projects within the PyTable SourceForge project, the
+core PyTable package, and a Zope Database Adapater (DA).&nbsp; This
+changelog does not cover the project changes from before the split out
+of the wxPython Properties Distribution.<br>
+
+
+
+
+
+
+</p>
+
+
+
+
+
+
+<h3>PyTable<br>
+
+
+
+
+
+
+</h3>
+
+
+
+
+
+
+<p>Version 0.8.23</p>
+<ul>
+  <li>Lots of little tweaks here and there, mostly small bug-fixes</li>
+</ul>
+<p>Version 0.8.14</p>
+
+<ul>
+
+  <li>Considerable number of small bug fixes</li>
+
+  <li>Eliminate the cursor-holding DBRow operations and
+whole-result-set operations that were seldom if ever useful and caused
+potential cursor "leaks"</li>
+
+  
+  <ul>
+
+    <li>Simplifies the structure of DBRow considerably</li>
+
+    <li>Eliminates much of the DBResultSet machinery beyond that of LazyResultSet</li>
+
+    <li>Eliminates the need for closeCursor() method on DBRows</li>
+
+  
+  </ul>
+
+</ul>
+
+<p>Version 0.8.11</p>
+
+
+<ul>
+
+
+  <li>Fix subtle bug in LazyResultSet</li>
+
+
+  <li>Fix postgresql introspection bugs related to namespace-based tables [patch from S. Agako]</li>
+
+
+  <li>Make the printstructure test/demo more useful (i.e. produce code
+closer to what you would write yourself) [patch from S. Agako, with
+revisions and extensions]</li>
+
+
+</ul>
+
+
+<p>Version 0.8.9</p>
+
+
+
+<ul>
+
+
+
+  <li>Allow specifying "serial" data-types to produce MySQL-compatible code with int an AUTO_INCREMENT</li>
+
+
+
+</ul>
+
+
+
+<p>Version 0.8.8</p>
+
+
+
+
+
+<ul>
+
+
+
+
+
+  <li>Allow recursive records and record references in defaultRecords for auto-generation</li>
+
+
+
+
+
+  <li>Allow recursive record references for insertQuery, updateQuery, refreshQuery so that a
+reference to a DBRow or a dictionary of key-values can be used to refer
+to the foreign-key value</li>
+
+
+
+
+  <li>Add a currentQuery method on DBRows that attempts to retrieve the current version of a row</li>
+
+
+
+
+
+  <li>Try not to use OID-based last-record retrieval unless there is no
+other option (PostgreSQL has deprecated OIDs (though they haven't
+provided an alternative *general* mechanism for doing "last inserted
+record" lookups))</li>
+
+
+
+
+
+</ul>
+
+
+
+
+
+<p>Version 0.8.6</p>
+
+
+
+
+
+
+<ul>
+
+
+
+
+
+
+  <li>Allow displaySize on dbschema.FieldSchema instances to be any
+object, allows for declaring PostgreSQL decimal(9,2) or similar types</li>
+
+
+
+
+
+
+  <li>pyPgSQL driver hacks the driver to allow for passing in
+decimal.Decimal instances (experimental)</li>
+
+
+
+
+
+
+</ul>
+
+
+
+
+
+
+<p>Version 0.8.5</p>
+
+
+
+
+
+
+<ul>
+
+
+
+
+
+
+  <li>Support for specifying "withOids" for table schemas to have OID
+support under PostgreSQL</li>
+
+
+
+
+
+
+  <li>Small utility "FindTable" object for creating system fixtures for
+looking up tables by name in a given schema</li>
+
+
+
+
+
+
+</ul>
+
+
+
+
+
+
+<p>Version 0.8.3<br>
+
+
+
+
+
+
+</p>
+
+
+
+
+
+
+<ul>
+
+
+
+
+
+
+  <li>Fixes to support strange behaviours in PyGreSQL (e.g. returning
+lists-of-integers as strings)</li>
+
+
+
+
+
+
+  <li>Log errors during query-result processing (requires updated
+BasicProperty)<br>
+
+
+
+
+
+
+  </li>
+
+
+
+
+
+
+</ul>
+
+
+
+
+
+
+<p>Version 0.8.2<br>
+
+
+
+
+
+
+</p>
+
+
+
+
+
+
+<ul>
+
+
+
+
+
+
+  <li>Added PyGreSQL (DB-API) driver for PostgreSQL<br>
+
+
+
+
+
+
+  </li>
+
+
+
+
+
+
+  <li>Various fixes to the test suite pointed out by PyGreSQL testing</li>
+
+
+
+
+
+
+  <li>Tightened restrictions on schema.lookupName, particularly for
+index schemas</li>
+
+
+
+
+
+
+</ul>
+
+
+
+
+
+
+<p>Version 0.8.1<br>
+
+
+
+
+
+
+</p>
+
+
+
+
+
+
+<ul>
+
+
+
+
+
+
+  <li>Fix PySQLite driver's listTables query to match the declared API
+(i.e. return simple list-of-strings for the table names)<br>
+
+
+
+
+
+
+  </li>
+
+
+
+
+
+
+</ul>
+
+
+
+
+
+
+<p>Version 0.8.0<br>
+
+
+
+
+
+
+</p>
+
+
+
+
+
+
+<ul>
+
+
+
+
+
+
+  <li>Added PySQLite driver, currently PySQLite 2.0 dependent<br>
+
+
+
+
+
+
+  </li>
+
+
+
+
+
+
+  <li>Added preliminary module to support pyformat queries on
+non-pyformat-supporting database drivers</li>
+
+
+
+
+
+
+</ul>
+
+
+
+
+
+
+<p>Version 0.7.12<br>
+
+
+
+
+
+
+</p>
+
+
+
+
+
+
+<ul>
+
+
+
+
+
+
+  <li>Preliminary support for namespaces/sub-schemas, at the moment
+only creation is usefully supported, composition doesn't work as one
+would expect, so schema tables need to be defined in the database's
+tables property, not the schema's.<br>
+
+
+
+
+
+
+  </li>
+
+
+
+
+
+
+</ul>
+
+
+
+
+
+
+<p>Version 0.7.11<br>
+
+
+
+
+
+
+</p>
+
+
+
+
+
+
+<ul>
+
+
+
+
+
+
+  <li>Test suite reworked to use command-line options to build the
+database specifier used for connection, the result is that you should
+be able to create a database (e.g. test) and run <code>test.py -dtest</code>
+(assuming a local connection that doesn't require authentication) and
+have the test-suite pass.</li>
+
+
+
+
+
+
+  <li>Suppress warning during schema reverse engineering when an index
+references a system column (normally oid).&nbsp; There's still no
+awareness of oid-indices, but fixing that looks like it will require
+some low-level hackery.<br>
+
+
+
+
+
+
+  </li>
+
+
+
+
+
+
+  <li>Tweak the DBRow actions to not use None as an identifying value
+for not Null columns, that is, will not consider a NULL as specifying a
+unique index if the column is not-null constrained</li>
+
+
+
+
+
+
+  <li>Fix logical error in nullOk property calculation, basically it
+wasn't taking "primary" constraints on fields as indicating NOT NULL
+condition (i.e. a primary constraint should be a superset of a notNull
+constraint)<br>
+
+
+
+
+
+
+  </li>
+
+
+
+
+
+
+</ul>
+
+
+
+
+
+
+<p>Version 0.7.10<br>
+
+
+
+
+
+
+</p>
+
+
+
+
+
+
+<ul>
+
+
+
+
+
+
+  <li>Fields whose name is not equal to the database-normalised form
+(i.e. all-upper or all-lower) are now properly matched on retrieval.</li>
+
+
+
+
+
+
+  <li>Allow for specifying debug=1 for DBRow queries calls to get
+debugging on individual update/refresh/insert calls</li>
+
+
+
+
+
+
+</ul>
+
+
+
+
+
+
+<p>Version 0.7.9<br>
+
+
+
+
+
+
+</p>
+
+
+
+
+
+
+<ul>
+
+
+
+
+
+
+  <li>Make DBRow.getProperties return properties in schema order as
+much as possible</li>
+
+
+
+
+
+
+</ul>
+
+
+
+
+
+
+<p>Version 0.7.8<br>
+
+
+
+
+
+
+</p>
+
+
+
+
+
+
+<ul>
+
+
+
+
+
+
+  <li>Foreign-key fields without an explicitly specified dataType now
+have a dataType of foreign.tableName or foreign.tableName.dataType if
+there's a known dbDatatype.</li>
+
+
+
+
+
+
+  <li>Setting a field value to None/NULL will cause the value to be
+deleted rather than raising a TypeError when the system tries to
+convert it to the base data-type.&nbsp; A previously un-set value will
+not cause an error to be raised in this case.<br>
+
+
+
+
+
+
+  </li>
+
+
+
+
+
+
+  <li>Setting a foreign-key field's value to a DBRow instance will
+attempt to extract from the row the foreign-key fields of the reference.</li>
+
+
+
+
+
+
+  <li>Some minor docstring and extraneous import cleanup<br>
+
+
+
+
+
+
+  </li>
+
+
+
+
+
+
+  <li>A little bit more robustness wrt dictionary sets so that missing
+a particular property-storage dictionary doesn't cause a failure during
+row updates<br>
+
+
+
+
+
+
+  </li>
+
+
+
+
+
+
+</ul>
+
+
+
+
+
+
+<p>Version 0.7.7<br>
+
+
+
+
+
+
+</p>
+
+
+
+
+
+
+<ul>
+
+
+
+
+
+
+  <li>DBProperty changes redux:</li>
+
+
+
+
+
+
+  
+  
+  
+  
+  
+  
+  <ul>
+
+
+
+
+
+
+    <li>Refactored "default value" code for dataType property into the
+FieldSchema object.&nbsp; Effectively just a bug-fix for the changes in
+0.7.6, which, though they worked fine, were never getting invoked, as
+there was another set of default code in the FieldSchema that would
+always get used for the dataType property.<br>
+
+
+
+
+
+
+    </li>
+
+
+
+
+
+
+  
+  
+  
+  
+  
+  
+  </ul>
+
+
+
+
+
+
+</ul>
+
+
+
+
+
+
+<p>Version 0.7.6<br>
+
+
+
+
+
+
+</p>
+
+
+
+
+
+
+<ul>
+
+
+
+
+
+
+  <li>DBProperty changes:<br>
+
+
+
+
+
+
+  </li>
+
+
+
+
+
+
+  
+  
+  
+  
+  
+  
+  <ul>
+
+
+
+
+
+
+    <li>Foreign-key fields without an explicitly specified dataType now
+have a dataType of foreign.tableName or foreign.tableName.dataType if
+there's a known dbDatatype.&nbsp; <br>
+
+
+
+
+
+
+    </li>
+
+
+
+
+
+
+  
+  
+  
+  
+  
+  
+  </ul>
+
+
+
+
+
+
+  
+  
+  
+  
+  
+  
+  <ul>
+
+
+
+
+
+
+    <li>Setting a field value to None/NULL will cause the value to be
+deleted rather than raising a TypeError when the system tries to
+convert it to the base data-type.&nbsp; <br>
+
+
+
+
+
+
+    </li>
+
+
+
+
+
+
+    <li>Setting a foreign-key field's value to a DBRow instance will
+attempt to extract from the row the foreign-key fields of the reference
+and store that.</li>
+
+
+
+
+
+
+  
+  
+  
+  
+  
+  
+  </ul>
+
+
+
+
+
+
+  <li>Some documentation changes, fairly minor.<br>
+
+
+
+
+
+
+  </li>
+
+
+
+
+
+
+</ul>
+
+
+
+
+
+
+<p>Version 0.7.5<br>
+
+
+
+
+
+
+</p>
+
+
+
+
+
+
+<ul>
+
+
+
+
+
+
+  <li>Added convenience getForeignFields method to ForeignKeyConstraint
+DBSchema objects<br>
+
+
+
+
+
+
+  </li>
+
+
+
+
+
+
+  <li>Began work on psycopg wrapper</li>
+
+
+
+
+
+
+  <li>Refactored mechanism used for registering the default driver
+packages</li>
+
+
+
+
+
+
+  <li>Began work on extending and generalising the test suite</li>
+
+
+
+
+
+
+  <li>Added capabilities objects for PostgreSQL and MySQL drivers</li>
+
+
+
+
+
+
+  <li>Added SQLQuery method to use the driver's capabilities to
+determine whether to encode queries as strings instead of unicode
+objects</li>
+
+
+
+
+
+
+  <li>Added mechanism to SQLMultiQuery to report the last-produced
+record when errors occur (to make debugging easier)<br>
+
+
+
+
+
+
+  </li>
+
+
+
+
+
+
+</ul>
+
+
+
+
+
+
+<p>Version 0.7.2<br>
+
+
+
+
+
+
+</p>
+
+
+
+
+
+
+<ul>
+
+
+
+
+
+
+  <li>Fix to DBRow's RefreshQuery.&nbsp; Basically the old code was
+re-using the same variable name to refer to both the old raw data and
+the newly queried data and was simply re-storing the old data rather
+than storing the new data.<br>
+
+
+
+
+
+
+  </li>
+
+
+
+
+
+
+</ul>
+
+
+
+
+
+
+<p>Version 0.7.1<br>
+
+
+
+
+
+
+</p>
+
+
+
+
+
+
+<ul>
+
+
+
+
+
+
+  <li>Added check to see if schema.baseClass has a dbLoad classmethod
+in preference to schema.baseClass.coerce for loading property values
+from the database (wrapping values)</li>
+
+
+
+
+
+
+</ul>
+
+
+
+
+
+
+<p>Version 0.7.0<br>
+
+
+
+
+
+
+</p>
+
+
+
+
+
+
+<ul>
+
+
+
+
+
+
+  <li>Initial creation of a PyTable Zope Database Adapter (see notes
+below)<br>
+
+
+
+
+
+
+  </li>
+
+
+
+
+
+
+  <li>Creating it spurred me into adding a new property to driver
+objects and
+refactoring a specifier method</li>
+
+
+
+
+
+
+  
+  
+  
+  
+  
+  
+  <ul>
+
+
+
+
+
+
+  
+  
+  
+  
+  
+  
+  </ul>
+
+
+
+
+
+
+</ul>
+
+
+
+
+
+
+<p>Version 0.6.7<br>
+
+
+
+
+
+
+</p>
+
+
+
+
+
+
+<ul>
+
+
+
+
+
+
+  <li>Fix to make deleted properties of rows cause the database to
+adopt NULL (or the field's defaultValue if available)<br>
+
+
+
+
+
+
+  </li>
+
+
+
+
+
+
+</ul>
+
+
+
+
+
+
+<p>Verison 0.6.6<br>
+
+
+
+
+
+
+</p>
+
+
+
+
+
+
+<ul>
+
+
+
+
+
+
+  <li>Work-around for PostgreSQL performance bug where int literals
+used for bigint/int2 indices cause the query planner to always use
+sequential scanning</li>
+
+
+
+
+
+
+  <li>Fix in LazyResultSet for case where cursor returns null, and also
+raises error on fetchone</li>
+
+
+
+
+
+
+  <li>setdefault method added to DBRow's to flesh out the
+dictionary-like interface<br>
+
+
+
+
+
+
+  </li>
+
+
+
+
+
+
+</ul>
+
+
+
+
+
+
+<p>Version 0.6.5<br>
+
+
+
+
+
+
+</p>
+
+
+
+
+
+
+<ul>
+
+
+
+
+
+
+  <li>Added baseItemClass attribute to table schemas</li>
+
+
+
+
+
+
+  <li>Killed old, commented out code for query on TableSchema</li>
+
+
+
+
+
+
+  <li>Changed format of attribute error for dbconnection objects</li>
+
+
+
+
+
+
+  <li>Has_key and get methods for dbrow</li>
+
+
+
+
+
+
+  <li>Implementation of property-value-deletion for dbrow/dbproperty</li>
+
+
+
+
+
+
+</ul>
+
+
+
+
+
+
+<p>Version 0.5.9<br>
+
+
+
+
+
+
+</p>
+
+
+
+
+
+
+<ul>
+
+
+
+
+
+
+  <li>Fix for the order in which INSERT statements are generated with
+relation to table index statements<br>
+
+
+
+
+
+
+  </li>
+
+
+
+
+
+
+  <li>Docstring updates</li>
+
+
+
+
+
+
+  <li>A few minor tweaks/fixes</li>
+
+
+
+
+
+
+</ul>
+
+
+
+
+
+
+<p>Version 0.5.8<br>
+
+
+
+
+
+
+</p>
+
+
+
+
+
+
+<ul>
+
+
+
+
+
+
+  <li>A few minor bug-fixes</li>
+
+
+
+
+
+
+  <li>Added dictionary-like access to dbrows</li>
+
+
+
+
+
+
+  <li>Experimental xmlgenerator module added</li>
+
+
+
+
+
+
+</ul>
+
+
+
+
+
+
+<p>Version 0.5.7<br>
+
+
+
+
+
+
+</p>
+
+
+
+
+
+
+<ul>
+
+
+
+
+
+
+  <li>Initial stand-alone release of PyTable</li>
+
+
+
+
+
+
+</ul>
+
+
+
+
+
+
+<h3>PyTableDA (Zope Database Adapter for PyTable)<br>
+
+
+
+
+
+
+</h3>
+
+
+
+
+
+
+<p>Version 0.1.3<br>
+
+
+
+
+
+
+</p>
+
+
+
+
+
+
+<ul>
+
+
+
+
+
+
+  <li>Connection Icon fixed</li>
+
+
+
+
+
+
+  <li>Conflicting security declaration eliminated</li>
+
+
+
+
+
+
+  <li>newclasssecurity module (dependency) included in CVS and source
+archive</li>
+
+
+
+
+
+
+</ul>
+
+
+
+
+
+
+<p>Version 0.1.2<br>
+
+
+
+
+
+
+</p>
+
+
+
+
+
+
+<ul>
+
+
+
+
+
+
+  <li>Work around for connections failing to notice that they've been
+closed by the server, and thus not reporting to Zope that they should
+be closed and re-opened.<br>
+
+
+
+
+
+
+  </li>
+
+
+
+
+
+
+</ul>
+
+
+
+
+
+
+<p>Version 0.1.1<br>
+
+
+
+
+
+
+</p>
+
+
+
+
+
+
+<ul>
+
+
+
+
+
+
+  <li>Excluded file newclasssecurity.py included, allows use of
+new-style classes under Zope<br>
+
+
+
+
+
+
+  </li>
+
+
+
+
+
+
+</ul>
+
+
+
+
+
+
+<p>Version 0.1.0<br>
+
+
+
+
+
+
+</p>
+
+
+
+
+
+
+<ul>
+
+
+
+
+
+
+  <li>Initial release of PyTableDA</li>
+
+
+
+
+
+
+  <li>Adapter is a seperate project from the main package, but .&nbsp; <br>
+
+
+
+
+
+
+  </li>
+
+
+
+
+
+
+  <li>Adapter appears to be working correctly under Zope 2.7 and
+Win32 running PyPgSQL, but it's not particularly full-featured or
+extensively tested/used.&nbsp; Basically it works well enough to act as
+an authourisation source under exUserFolder (my primary reason for
+creating it)</li>
+
+
+
+
+
+
+  <li>Basic connectivity works (including listing available DBs if
+you have right to join system database)</li>
+
+
+
+
+
+
+  <li>You can see your table/field definitions from a connected
+database</li>
+
+
+
+
+
+
+</ul>
+
+
+
+
+
+
+<h2>License</h2>
+
+
+
+
+
+
+<pre>PyTable RDBMS Middleware<br>	Copyright (c) 2002-2004, Michael C. Fletcher<br>	All rights reserved.<br><br>THIS SOFTWARE IS NOT FAULT TOLERANT AND SHOULD NOT BE USED IN ANY<br>SITUATION ENDANGERING HUMAN LIFE OR PROPERTY.<br><br>Redistribution and use in source and binary forms, with or without<br>modification, are permitted provided that the following conditions<br>are met:<br><br>    Redistributions of source code must retain the above copyright<br>    notice, this list of conditions and the following disclaimer.<br><br>    Redistributions in binary form must reproduce the above<br>    copyright notice, this list of conditions and the following<br>    disclaimer in the documentation and/or other materials<br>    provided with the distribution.<br><br>    The name of Michael C. Fletcher may not be used to endorse or <br>    promote products derived from this software without specific <br>    prior written permission.<br><br>THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS<br>``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT<br>LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS<br>FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE<br>COPYRIGHT HOLDERS AND CONTRIBUTORS BE LIABLE FOR ANY DIRECT,<br>INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES<br>(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR<br>SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)<br>HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,<br>STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)<br>ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED<br>OF THE POSSIBILITY OF SUCH DAMAGE.<br></pre>
+
+
+
+
+
+
+<p style="text-align: center;" class="footer"><a href="http://pytable.sourceforge.net/">PyTable</a>&nbsp; is a <a href="http://sourceforge.net"> <img title="" alt="SourceForge.net Logo" style="border: 0px solid ; width: 88px; height: 31px;" src="http://sourceforge.net/sflogo.php?group_id=87033&amp;type=1" align="middle" border="0" height="31" width="88"></a>
+Open-Source <a href="https://sourceforge.net/projects/pytable/">Project</a><br>
+
+
+
+
+
+
+</p>
+
+
+
+
+
+
+</body>
+</html>

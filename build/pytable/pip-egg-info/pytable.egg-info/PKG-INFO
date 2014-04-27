@@ -1,0 +1,31 @@
+Metadata-Version: 1.0
+Name: pytable
+Version: 0.8.23a
+Summary: BasicProperty-based RDBMS Wrapper
+Home-page: http://pytable.sourceforge.net/
+Author: Mike C. Fletcher
+Author-email: mcfletch@users.sourceforge.net
+License: BSD-style, see license.txt for details
+Download-URL: https://sourceforge.net/project/showfiles.php?group_id=87033
+Description: BasicProperty-based RDBMS Wrapper
+        
+        PyTable provides a schema-based mechanism for constructing
+        database-based applications.  Included is a fairly elegant
+        SQLQuery object which makes creation of complex SQL in response
+        to application requirements somewhat easier, as well as
+        classes allowing the modelling of database schemas.
+        
+        Can read MySQL and PostgreSQL schemas from live databases.
+        Can build databases from schemas.
+        Does not attempt to abstract away differences in SQL syntax.
+        Provides optional object-oriented row-wrappers with
+        BasicProperty properties defining fields.
+        
+Keywords: database,postgresql,mysql,db-api,object-relational mapper,basicproperty,property,descriptor,schema,query,sql
+Platform: Any
+Classifier: License :: OSI Approved :: BSD License
+Classifier: Programming Language :: Python
+Classifier: Topic :: Software Development :: Libraries :: Python Modules
+Classifier: Intended Audience :: Developers
+Classifier: Operating System :: OS Independent
+Classifier: Topic :: Database

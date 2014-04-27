@@ -1,0 +1,12 @@
+(use loops)
+
+(define (neg_unit_pow k)
+  (let ((r (modulo k 2)))
+    (if (= r 1) -1 1)))
+
+(define (range a b)
+
+(define (partitions n cache)
+  (cond ((<= n 1) 1)
+        ((= n 2) 2)
+        (else 3)))
