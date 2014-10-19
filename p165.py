@@ -2,7 +2,7 @@
 
 from sympy.geometry import Point, Segment
 
-NCOORDS = 8
+NCOORDS = 20000 
 NPOINTS = NCOORDS/2
 NSEGMENTS = NPOINTS/2
 
@@ -17,6 +17,7 @@ def blumblumshub():
 def brute_count(sx):
     ix = []
     for pos, s in enumerate(sx):
+        print "Progress: %f" % ((pos*100.0)/NSEGMENTS)
         for t in sx[pos+1:]:
             i = s.intersection(t)
             if i:
@@ -35,7 +36,6 @@ def main():
     print "Filtering intersections for duplicates: %d -> %d " % (len(ix), len(ixf1))
     ixf2 = [i for i in ixf1 if i not in px]
     print "Filtering intersections for endpoints: %d -> %d " % (len(ixf1), len(ixf2))
-    print cx, px, sx
 
 if __name__ == "__main__":
     main()
